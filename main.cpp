@@ -4,8 +4,14 @@
 #include <vector>
 #include <random>
 #include <iostream>
+#include <iomanip>
 
 using namespace std;
+
+const int TeachStep = 25;
+const int TeachMax = 2000;
+const int TestCount = 500;
+const bool Verbose = true;
 
 bool coin_rand(double pref) {
 	static random_device rd;
@@ -32,15 +38,16 @@ int choose_weak(Board board, char who) {
 		return move_rand(board);
 }
 
-void teach(Player &player, int count) {
-	for (int c = 0; c < count; ++ c) {
+void teach(Player &player, int begin, int step, int max) {
+	int end = min(begin+TeachStep, TeachMax);
+	for (int c = begin; c < end; ++ c) {
 		State *state = player.default_state();
 		vector<State*> game;
 		char ml = coin_rand(0.5) ? 'x' : '0';
 		char who = 'x';
 		do {
 			if (who == ml) {
-				double pref = static_cast<double>(c)/static_cast<double>(count);
+				double pref = static_cast<double>(c)/static_cast<double>(TeachMax);
 				if (coin_rand(pref))
 					state = state->next(state->richest_next(ml));
 				else
@@ -77,13 +84,19 @@ double test(Player& player, int count) {
 	int s = 0;
 	for (int c = 0; c < count; ++ c)
 		s += play(coin_rand(0.5) ? 'x' : '0', player);
-	return static_cast<double>(s)/static_cast<double>(2*count);
+	return static_cast<double>(s)/static_cast<double>(count);
 }
 
-int main() {
+int main(int argc, char **argv) {
 	Player array;
-	clog << test(array, 50) << endl;
-	teach(array, 1000);
-	clog << test(array, 50) << endl;
+	int count = 0;
+	cout << setw(4) << count << ": " << flush;
+	cout << fixed << setprecision(2) << test(array, TestCount) << endl << flush;
+	while (count < TeachMax) {
+		teach(array, count, TeachStep, TeachMax);
+		count += TeachStep;
+		clog << setw(4) << count << ": " << flush;
+		clog << fixed << setprecision(2) << test(array, TestCount) << endl << flush;
+	}
 	return 0;
 }
