@@ -38,7 +38,7 @@ int choose_weak(Board board, char who) {
 		return move_rand(board);
 }
 
-void teach(Player &player, int begin, int step, int max) {
+void teach(Player &player, int begin) {
 	int end = min(begin+TeachStep, TeachMax);
 	for (int c = begin; c < end; ++ c) {
 		State *state = player.default_state();
@@ -93,7 +93,7 @@ int main(int argc, char **argv) {
 	cout << setw(4) << count << ": " << flush;
 	cout << fixed << setprecision(2) << test(array, TestCount) << endl << flush;
 	while (count < TeachMax) {
-		teach(array, count, TeachStep, TeachMax);
+		teach(array, count);
 		count += TeachStep;
 		clog << setw(4) << count << ": " << flush;
 		clog << fixed << setprecision(2) << test(array, TestCount) << endl << flush;
